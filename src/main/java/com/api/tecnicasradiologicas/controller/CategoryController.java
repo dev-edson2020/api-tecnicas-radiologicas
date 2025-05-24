@@ -1,59 +1,48 @@
 package com.api.tecnicasradiologicas.controller;
 
 import com.api.tecnicasradiologicas.dto.CategoryDTO;
-import com.api.tecnicasradiologicas.model.Category;
-import com.api.tecnicasradiologicas.repository.CategoryRepository;
+import com.api.tecnicasradiologicas.service.CategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("categories")
-@CrossOrigin(origins = "*") // para permitir acesso do frontend
+@RequestMapping("/categories")
+@CrossOrigin(origins = "*")
 public class CategoryController {
 
     @Autowired
-    private CategoryRepository categoryRepository;
+    private CategoryService categoryService;
 
     @GetMapping
-    public List<Category> getAll() {
-        return categoryRepository.findAll();
+    public ResponseEntity<List<CategoryDTO>> getAll() {
+        return ResponseEntity.ok(categoryService.getAll());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Category> getById(@PathVariable String id) {
-        return categoryRepository.findById(id)
-                .map(cat -> ResponseEntity.ok(cat))
+    public ResponseEntity<CategoryDTO> getById(@PathVariable Long id) {
+        return categoryService.getById(id)
+                .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping("/batch")
-    public ResponseEntity<List<Category>> createMultiple(@RequestBody List<CategoryDTO> categoriesDto) {
-        List<Category> categories = categoriesDto.stream()
-                .map(dto -> new Category(dto.getId(), dto.getName()))
-                .collect(Collectors.toList());
-        List<Category> saved = categoryRepository.saveAll(categories);
-        return ResponseEntity.ok(saved);
+    public ResponseEntity<List<CategoryDTO>> createMultiple(@RequestBody List<CategoryDTO> dtos) {
+        return ResponseEntity.ok(categoryService.createMultiple(dtos));
     }
 
-
     @PutMapping("/{id}")
-    public ResponseEntity<Category> update(@PathVariable String id, @RequestBody Category category) {
-        return categoryRepository.findById(id).map(existing -> {
-            existing.setName(category.getName());
-            categoryRepository.save(existing);
-            return ResponseEntity.ok(existing);
-        }).orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<CategoryDTO> update(@PathVariable Long id, @RequestBody CategoryDTO dto) {
+        return categoryService.update(id, dto)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable String id) {
-        return categoryRepository.findById(id).map(existing -> {
-            categoryRepository.delete(existing);
-            return ResponseEntity.noContent().<Void>build();
-        }).orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        boolean deleted = categoryService.delete(id);
+        return deleted ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
     }
 }

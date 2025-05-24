@@ -1,16 +1,14 @@
 package com.api.tecnicasradiologicas.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Column;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "categories")
 public class Category {
 
     @Id
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY) // Auto incremento
+    private Long id;
 
     @Column(nullable = false, unique = true)
     private String name;
@@ -18,19 +16,14 @@ public class Category {
     // Construtores
     public Category() {}
 
-    public Category(String id, String name) {
-        this.id = id;
+    public Category(String name) {
         this.name = name;
     }
 
     // Getters e Setters
 
-    public String getId() {
+    public Long getId() {
         return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
     }
 
     public String getName() {

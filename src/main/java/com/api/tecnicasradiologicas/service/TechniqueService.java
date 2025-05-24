@@ -1,55 +1,43 @@
 package com.api.tecnicasradiologicas.service;
 
-import com.api.tecnicasradiologicas.dto.TechniqueDTO;
 import com.api.tecnicasradiologicas.model.Technique;
 import com.api.tecnicasradiologicas.repository.TechniqueRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class TechniqueService {
 
-    private final TechniqueRepository techniqueRepository;
-
-    public TechniqueService(TechniqueRepository techniqueRepository) {
-        this.techniqueRepository = techniqueRepository;
-    }
+    @Autowired
+    private TechniqueRepository techniqueRepository;
 
     public List<Technique> findAll() {
         return techniqueRepository.findAll();
     }
 
-    public Optional<Technique> findById(String id) {
-        return techniqueRepository.findById(id);
+    public Technique findById(Long id) {
+        return techniqueRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Technique not found"));
     }
 
     public Technique save(Technique technique) {
         return techniqueRepository.save(technique);
     }
 
-    public void delete(Technique technique) {
-        techniqueRepository.delete(technique);
+    public Technique update(Long id, Technique technique) {
+        Technique existing = findById(id);
+        existing.setName(technique.getName());
+        existing.setKv(technique.getKv());
+        existing.setMas(technique.getMas());
+        existing.setMa(technique.getMa());
+        existing.setDistance(technique.getDistance());
+        existing.setCategory(technique.getCategory());
+        return techniqueRepository.save(existing);
     }
 
-       public Technique convertDtoToEntity(TechniqueDTO dto) {
-        Technique technique = new Technique();
-        technique.setId(dto.getId());
-        technique.setName(dto.getName());
-        technique.setkV(dto.getkV());
-        technique.setmAs(dto.getmAs());
-        technique.setmA(dto.getmA());
-        technique.setDistance(dto.getDistance());
-        technique.setFullName(dto.getFullName());
-        return technique;
-    }
-
-    public void saveAll(List<TechniqueDTO> dtos) {
-        List<Technique> techniques = dtos.stream()
-                .map(this::convertDtoToEntity)
-                .collect(Collectors.toList());
-        techniqueRepository.saveAll(techniques);
+    public void delete(Long id) {
+        techniqueRepository.deleteById(id);
     }
 }

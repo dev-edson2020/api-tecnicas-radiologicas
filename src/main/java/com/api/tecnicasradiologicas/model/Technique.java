@@ -1,55 +1,30 @@
 package com.api.tecnicasradiologicas.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Column;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "techniques")
 public class Technique {
 
     @Id
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    @Column(nullable = false)
     private String name;
+    private Integer kv;
+    private Integer mas;
+    private Integer ma;
+    private Integer distance;
 
     @ManyToOne
-    @JoinColumn(name = "category_id", nullable = false)
+    @JoinColumn(name = "category_id")
     private Category category;
 
-    private double kV;
-    private double mAs;
-    private double mA;
-    private double distance;
-
-    @Column(name = "full_name")
-    private String fullName;
-
-    // Construtores
-    public Technique() {}
-
-    public Technique(String id, String name, Category category, double kV, double mAs, double mA, double distance, String fullName) {
-        this.id = id;
-        this.name = name;
-        this.category = category;
-        this.kV = kV;
-        this.mAs = mAs;
-        this.mA = mA;
-        this.distance = distance;
-        this.fullName = fullName;
-    }
-
-    // Getters e Setters
-
-    public String getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -61,51 +36,43 @@ public class Technique {
         this.name = name;
     }
 
+    public Integer getKv() {
+        return kv;
+    }
+
+    public void setKv(Integer kv) {
+        this.kv = kv;
+    }
+
+    public Integer getMas() {
+        return mas;
+    }
+
+    public void setMas(Integer mas) {
+        this.mas = mas;
+    }
+
+    public Integer getMa() {
+        return ma;
+    }
+
+    public void setMa(Integer ma) {
+        this.ma = ma;
+    }
+
+    public Integer getDistance() {
+        return distance;
+    }
+
+    public void setDistance(Integer distance) {
+        this.distance = distance;
+    }
+
     public Category getCategory() {
         return category;
     }
 
     public void setCategory(Category category) {
         this.category = category;
-    }
-
-    public double getkV() {
-        return kV;
-    }
-
-    public void setkV(double kV) {
-        this.kV = kV;
-    }
-
-    public double getmAs() {
-        return mAs;
-    }
-
-    public void setmAs(double mAs) {
-        this.mAs = mAs;
-    }
-
-    public double getmA() {
-        return mA;
-    }
-
-    public void setmA(double mA) {
-        this.mA = mA;
-    }
-
-    public double getDistance() {
-        return distance;
-    }
-
-    public void setDistance(double distance) {
-        this.distance = distance;
-    }
-
-    public String getFullName() {
-        return fullName;
-    }
-
-    public void setFullName(String fullName) {
-        this.fullName = fullName;
     }
 }
