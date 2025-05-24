@@ -34,7 +34,7 @@ public class TechniqueService {
         techniqueRepository.delete(technique);
     }
 
-    public Technique convertDtoToEntity(TechniqueDTO dto) {
+       public Technique convertDtoToEntity(TechniqueDTO dto) {
         Technique technique = new Technique();
         technique.setId(dto.getId());
         technique.setName(dto.getName());
@@ -43,7 +43,6 @@ public class TechniqueService {
         technique.setmA(dto.getmA());
         technique.setDistance(dto.getDistance());
         technique.setFullName(dto.getFullName());
-        // Category será setada no controller, já que precisa ser carregada do DB
         return technique;
     }
 

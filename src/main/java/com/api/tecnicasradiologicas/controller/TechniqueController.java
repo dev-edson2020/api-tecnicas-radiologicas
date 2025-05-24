@@ -4,6 +4,7 @@ import com.api.tecnicasradiologicas.dto.TechniqueDTO;
 import com.api.tecnicasradiologicas.model.Category;
 import com.api.tecnicasradiologicas.model.Technique;
 import com.api.tecnicasradiologicas.repository.CategoryRepository;
+import com.api.tecnicasradiologicas.repository.TechniqueRepository;
 import com.api.tecnicasradiologicas.service.TechniqueService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -18,11 +19,14 @@ public class TechniqueController {
 
     private final TechniqueService techniqueService;
     private final CategoryRepository categoryRepository;
+    private final TechniqueRepository techniqueRepository;
 
     @Autowired
-    public TechniqueController(TechniqueService techniqueService, CategoryRepository categoryRepository) {
+    public TechniqueController(TechniqueService techniqueService, CategoryRepository categoryRepository,
+                               TechniqueRepository techniqueRepository) {
         this.techniqueService = techniqueService;
         this.categoryRepository = categoryRepository;
+        this.techniqueRepository = techniqueRepository;
     }
 
     @GetMapping
@@ -39,11 +43,11 @@ public class TechniqueController {
 
     @PostMapping
     public ResponseEntity<?> create(@RequestBody TechniqueDTO dto) {
-        if (dto.getCategory() == null) {
+        if (dto.getCategory() == null || dto.getCategory().getId() == null) {
             return ResponseEntity.badRequest().body("Category ID must be provided");
         }
 
-        Category category = categoryRepository.findById(dto.getCategory())
+        Category category = categoryRepository.findById(dto.getCategory().getId())
                 .orElse(null);
 
         if (category == null) {
@@ -58,8 +62,23 @@ public class TechniqueController {
     }
 
     @PostMapping("/batch")
-    public ResponseEntity<?> saveTechniquesBatch(@RequestBody List<TechniqueDTO> techniques) {
-        techniqueService.saveAll(techniques);
+    public ResponseEntity<?> saveTechniquesBatch(@RequestBody List<TechniqueDTO> dtos) {
+        for (TechniqueDTO dto : dtos) {
+            if (dto.getCategory() == null || dto.getCategory().getId() == null) {
+                return ResponseEntity.badRequest().body("Category ID must be provided in all techniques");
+            }
+
+            Category category = categoryRepository.findById(dto.getCategory().getId())
+                    .orElse(null);
+
+            if (category == null) {
+                return ResponseEntity.badRequest().body("Category not found: " + dto.getCategory().getId());
+            }
+
+            Technique technique = techniqueService.convertDtoToEntity(dto);
+            technique.setCategory(category);
+            techniqueService.save(technique);
+        }
         return ResponseEntity.ok("Técnicas salvas com sucesso.");
     }
 
@@ -68,8 +87,8 @@ public class TechniqueController {
         return techniqueService.findById(id).map(existing -> {
             existing.setName(dto.getName());
 
-            if (dto.getCategory() != null) {
-                Category category = categoryRepository.findById(dto.getCategory()).orElse(null);
+            if (dto.getCategory() != null && dto.getCategory().getId() != null) {
+                Category category = categoryRepository.findById(dto.getCategory().getId()).orElse(null);
                 if (category != null) {
                     existing.setCategory(category);
                 }
@@ -87,10 +106,10 @@ public class TechniqueController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable String id) {
+    public ResponseEntity<Object> delete(@PathVariable String id) {
         return techniqueService.findById(id).map(existing -> {
             techniqueService.delete(existing);
-            return ResponseEntity.noContent().<Void>build();
+            return ResponseEntity.noContent().build();
         }).orElse(ResponseEntity.notFound().build());
     }
 }
