@@ -1,6 +1,9 @@
 package com.api.tecnicasradiologicas.controller;
 
 import com.api.tecnicasradiologicas.dto.CategoryDTO;
+import com.api.tecnicasradiologicas.model.Category;
+import com.api.tecnicasradiologicas.repository.CategoryRepository;
+import com.api.tecnicasradiologicas.repository.TechniqueRepository;
 import com.api.tecnicasradiologicas.service.CategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +19,12 @@ public class CategoryController {
     @Autowired
     private CategoryService categoryService;
 
+    @Autowired
+    private CategoryRepository categoryRepository;
+
+    @Autowired
+    private TechniqueRepository techniqueRepository;
+
     @GetMapping
     public ResponseEntity<List<CategoryDTO>> getAll() {
         return ResponseEntity.ok(categoryService.getAll());
@@ -26,6 +35,16 @@ public class CategoryController {
         return categoryService.getById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/with-techniques")
+    public ResponseEntity<List<Category>> getCategoriesWithTechniques() {
+        List<Category> allCategories = categoryRepository.findAll();
+        List<Category> categoriesWithTechniques = allCategories.stream()
+                .filter(category -> techniqueRepository.existsByCategory(category))
+                .toList();
+
+        return ResponseEntity.ok(categoriesWithTechniques);
     }
 
     @PostMapping("/batch")
